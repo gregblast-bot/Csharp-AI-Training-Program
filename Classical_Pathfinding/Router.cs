@@ -5,7 +5,7 @@ namespace Classical_Pathfinding;
 /// 
 /// </summary>
 /// <param name="environment"></param>
-internal class Router(Node[,] environment)
+internal class Pathfinder(Node[,] environment)
 {
     private readonly int _width = environment.GetLength(0);
     private readonly int _height = environment.GetLength(1);

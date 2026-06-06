@@ -46,8 +46,8 @@ internal class Program
             goal.IsWalkable = true;
 
             // Calculate Path.
-            Router router = new(environment);
-            List<Node> route = router.FindPath(start, goal) ?? new();
+            Pathfinder pathfinder = new(environment);
+            List<Node> path = pathfinder.FindPath(start, goal) ?? new();
 
             // Render map to the screen.
             for (int y = 0; y < height; y++)
@@ -61,7 +61,7 @@ internal class Program
                         _ when current == start => "[S]",
                         _ when current == goal => "[G]",
                         _ when !current.IsWalkable => "###",
-                        _ when route.Contains(current) => " * ",
+                        _ when path.Contains(current) => " * ",
                         _ => " . "
                     };
 
@@ -71,18 +71,18 @@ internal class Program
             }
 
             Console.WriteLine();
-            if (route.Count == 0 && start != goal)
+            if (path.Count == 0 && start != goal)
             {
                 Console.WriteLine("Status: No path found! (Blocked by obstacles)");
             }
             else
             {
-                Console.WriteLine($"Status: Path found! Length: {route.Count} nodes.");
+                Console.WriteLine($"Status: Path found! Length: {path.Count} nodes.");
             }
 
             if (i < 3)
             {
-                Console.WriteLine("\nPath found. Press any key to continue.");
+                Console.WriteLine("\nPress any key to continue.");
                 Console.ReadKey();
             }
         }
