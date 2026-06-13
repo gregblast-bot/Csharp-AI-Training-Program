@@ -1,3 +1,8 @@
 <Solution>
+  <Project Path="AI_Ops_Orchestration/AI_Ops_Orchestration.csproj" Id="db457ae4-821b-4d62-9183-b2d09fdabecf" />
   <Project Path="Classical_Pathfinding/Classical_Pathfinding.csproj" />
+  <Project Path="Deep_Learning_Inference/Deep_Learning_Inference.csproj" Id="10591644-6fd2-4baa-b88d-6d9c3b5623ab" />
+  <Project Path="Generative_AI/Generative_AI.csproj" Id="b0b2a911-2dcc-4f9f-b441-c59a004a7b35" />
+  <Project Path="Machine_Learning_Prediction/Machine_Learning_Prediction.csproj" Id="7c377b36-f911-48eb-babe-bdd4fb6122f0" />
+  <Project Path="Probabilistic_Classifier/Probabilistic_Classifier.csproj" Id="5367020b-40c8-4ddd-9d71-add433d5f19d" />
 </Solution>
