@@ -1,144 +1,128 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
-namespace AIModule2.Probability;
+namespace Probabilistic_Classifier;
 
-// Clean domain structures using modern C# records
-public record LogDocument(string Text, string Category);
-public record PredictionResult(string Category, double Probability);
-
-public class NaiveBayesClassifier
-{
-    private readonly HashSet<string> _vocabulary = [];
-    private readonly Dictionary<string, List<string[]>> _tokenizedDocsByCategory = [];
-    private readonly Dictionary<string, int> _totalWordsByCategory = [];
-    private readonly Dictionary<string, int> _docCountByCategory = [];
-    private int _totalDocumentCount;
-
-    public void Train(IEnumerable<LogDocument> trainingSet)
-    {
-        foreach (var doc in trainingSet)
-        {
-            var tokens = Tokenize(doc.Text);
-            if (tokens.Length == 0) continue;
-
-            _totalDocumentCount++;
-
-            // Modern C# dictionary pattern matching and collection expressions
-            if (!_tokenizedDocsByCategory.TryGetValue(doc.Category, out var docList))
-            {
-                docList = [];
-                _tokenizedDocsByCategory[doc.Category] = docList;
-                _totalWordsByCategory[doc.Category] = 0;
-                _docCountByCategory[doc.Category] = 0;
-            }
-
-            docList.Add(tokens);
-            _docCountByCategory[doc.Category]++;
-            _totalWordsByCategory[doc.Category] += tokens.Length;
-
-            foreach (var token in tokens)
-            {
-                _vocabulary.Add(token);
-            }
-        }
-    }
-
-    public PredictionResult Predict(string rawText)
-    {
-        var tokens = Tokenize(rawText);
-        if (_totalDocumentCount == 0 || tokens.Length == 0)
-        {
-            return new PredictionResult("Unknown", 0.0);
-        }
-
-        string bestCategory = "Unknown";
-        double maxLogLikelihood = double.NegativeInfinity;
-        var scores = new Dictionary<string, double>();
-
-        // Calculate probability for each known category
-        foreach (var category in _tokenizedDocsByCategory.Keys)
-        {
-            // Prior Probability: P(Category)
-            double prior = (double)_docCountByCategory[category] / _totalDocumentCount;
-
-            // Using Log Probabilities to completely prevent underflow errors from multiplying small decimals
-            double logLikelihood = Math.Log(prior);
-
-            // Likelihood: P(Word | Category) using Laplace Smoothing (+1) to handle unknown words
-            int totalWordsInCat = _totalWordsByCategory[category];
-            int vocabSize = _vocabulary.Count;
-
-            foreach (var token in tokens)
-            {
-                int wordCountInCat = _tokenizedDocsByCategory[category]
-                    .Sum(docTokens => docTokens.Count(t => t == token));
-
-                // Formula: P(w|c) = (count(w,c) + 1) / (total_words_in_c + vocabulary_size)
-                double wordProbability = (double)(wordCountInCat + 1) / (totalWordsInCat + vocabSize);
-                logLikelihood += Math.Log(wordProbability);
-            }
-
-            scores[category] = logLikelihood;
-
-            if (logLikelihood > maxLogLikelihood)
-            {
-                maxLogLikelihood = logLikelihood;
-                bestCategory = category;
-            }
-        }
-
-        // Convert the winning log-likelihood score back to a scannable percentage absolute value
-        double totalExp = scores.Values.Sum(v => Math.Exp(v - maxLogLikelihood));
-        double confidence = 1.0 / totalExp;
-
-        return new PredictionResult(bestCategory, confidence);
-    }
-
-    private static string[] Tokenize(string text) =>
-        Regex.Replace(text.ToLower(), @"[^\w\s]", "")
-             .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-}
-
-// Verification runner
 public static class Program
 {
+    private static readonly Dictionary<string, string> ClassMap = new()
+    {
+        { "NORMAL", "data/artificialNoAnomaly/" },
+        { "CPU", "data/realAWSCloudwatch/ec2_cpu" },
+        { "NETWORK", "data/realAWSCloudwatch/ec2_network" },
+        { "DISK", "data/realAWSCloudwatch/rds_cpu" }
+    };
+
     public static void Main()
     {
-        Console.WriteLine("=== Module 2: Probabilistic Log Triage Classifier ===");
+        Console.WriteLine("=== C# Naive Bayes NAB Incident Pipeline ===");
 
-        // 1. Generate historical training data 
-        List<LogDocument> trainingData = [
-            new("Out of memory error encountered on instance microservice thread pool", "Hardware"),
-            new("High CPU utilization spike detected on physical host machine cluster", "Hardware"),
-            new("Disk space full critical warning partition dev sda1 exhausted", "Hardware"),
-            new("Null reference exception thrown in user auth service controller index", "Software"),
-            new("Index out of bounds array validation failed during payload parsing", "Software"),
-            new("Database unique constraint violation duplicate key on email field", "Software"),
-            new("Connection timeout dropped packet failure communicating with gateway API", "Network"),
-            new("DNS resolution failed unable to resolve external auth endpoints", "Network"),
-            new("TCP handshake dropped packet connection reset by peer socket error", "Network")
-        ];
+        // Get the directory where the application executable is running
+        string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        // 2. Train our model
+        // Walk backwards to find the actual project root where your 'data' folder sits
+        // This moves up past bin/Debug/net8.0 to find the root folder
+        string projectRoot = Path.GetFullPath(Path.Combine(exeDirectory, "..", "..", ".."));
+
+        // If you are running a published build or a different structure, 
+        // you can fallback to checking if 'data' exists locally:
+        if (!Directory.Exists(Path.Combine(projectRoot, "data")))
+        {
+            projectRoot = Directory.GetCurrentDirectory(); // fallback to current working directory
+        }
+
+        Console.WriteLine($"Looking for data directory at: {Path.GetFullPath(Path.Combine(projectRoot, "data"))}");
+
+        // Ingest Data using the fully resolved absolute path
+        var trainingData = LoadDatasetPipeline(projectRoot, windowSize: 12);
+
+        if (!trainingData.Any())
+        {
+            Console.WriteLine("[Error] No training data found. Verify that the 'data' folder is in your root project directory.");
+            return;
+        }
+
+        // Model training
         var model = new NaiveBayesClassifier();
         model.Train(trainingData);
-        Console.WriteLine("Model training successfully completed over historical datasets.\n");
 
-        // 3. Test with ambiguous, unseen log statements
-        string[] testLogs = [
-            "Critical exception! Memory pool exhausted on index allocation worker thread.",
-            "Failed connection handshake dropped packets on index database node API.",
-            "Null pointer payload string parsing error."
-        ];
+        // Live Production Simulation Test Case
+        double[] liveIncidentWindow = [94.2, 95.1, 93.8, 96.4, 98.2, 99.1, 99.8, 100.0, 99.4, 102.1, 105.3, 108.5];
+        List<string> liveTokens = FeatureExtractor.ExtractTokens(liveIncidentWindow);
 
-        foreach (var log in testLogs)
+        // Run prediction (which now generates an audit)
+        var result = model.Predict(liveTokens);
+
+        // --- RENDER AUDIT REPORT ---
+        Console.WriteLine("\n==================================================");
+        Console.WriteLine("                INCIDENT AUDIT REPORT             ");
+        Console.WriteLine("==================================================");
+        Console.WriteLine($"Final Diagnosis : **{result.Category}**");
+        Console.WriteLine($"Model Confidence: {result.Probability * 100:F1}%");
+        Console.WriteLine($"Category Prior Log Probability: {result.Audit.PriorLogProbability:F4}");
+        Console.WriteLine("--------------------------------------------------");
+        Console.WriteLine("Token Influence Breakdown (Higher/Less Negative = Strongest Drivers):");
+
+        foreach (var influence in result.Audit.TopInfluences)
         {
-            var prediction = model.Predict(log);
-            Console.WriteLine($"Log: \"{log}\"");
-            Console.WriteLine($"--> Predicted Category: **{prediction.Category}** ({prediction.Probability * 100:F1}% confidence)\n");
+            // Highlight tokens that provided the strongest statistical weight
+            string driverTag = influence.LogProbabilityContribution > -3.0 ? "[Strong Driver]" : "[Weak/Common]";
+            Console.WriteLine($"  -> Token: {influence.Token,-30} | Weight Score: {influence.LogProbabilityContribution:F4} {driverTag}");
         }
+        Console.WriteLine("==================================================");
+    }
+    
+
+    private static List<LogDocument> LoadDatasetPipeline(string basePath, int windowSize)
+    {
+        List<LogDocument> dataset = [];
+
+        foreach (var mapping in ClassMap)
+        {
+            // 1. Separate the hardcoded map path into its directory and prefix components
+            string fullMapPath = mapping.Value; // e.g., "data/realAWSCloudwatch/ec2_cpu"
+
+            string folderPath = Path.Combine(basePath, Path.GetDirectoryName(fullMapPath));
+            string filePrefix = Path.GetFileName(fullMapPath); // e.g., "ec2_cpu"
+
+            if (!Directory.Exists(folderPath))
+            {
+                Console.WriteLine($"[Warning] Base directory not found: {folderPath}");
+                continue;
+            }
+
+            // 2. Search using the prefix as a search pattern (e.g., "ec2_cpu*.csv")
+            var files = Directory.GetFiles(folderPath, $"{filePrefix}*.csv");
+
+            foreach (var file in files)
+            {
+                var metrics = File.ReadLines(file)
+                                  .Skip(1)
+                                  .Select(line => line.Split(','))
+                                  .Where(parts => parts.Length > 1 && double.TryParse(parts[1], out _))
+                                  .Select(parts => double.Parse(parts[1]))
+                                  .ToArray();
+
+                for (int i = 0; i <= metrics.Length - windowSize; i++)
+                {
+                    double[] window = metrics.Skip(i).Take(windowSize).ToArray();
+                    string label = mapping.Key;
+
+                    if (label == "CPU" && window[^1] < 50.0)
+                    {
+                        label = "NORMAL";
+                    }
+
+                    List<string> tokens = FeatureExtractor.ExtractTokens(window);
+                    if (tokens.Count > 0)
+                    {
+                        dataset.Add(new LogDocument(tokens, label));
+                    }
+                }
+            }
+        }
+        return dataset;
     }
 }
