@@ -24,7 +24,9 @@ The repository is structured as a single Visual Studio solution (`Csharp-AI-Trai
 
 ```text
 
-├── AI_Ops_Orchestration           # Capstone orchestration and automated workflows
+├── AI_Ops_Orchestration           # Bonus: Capstone orchestration and automated workflows
+
+├── Beam_Search                    # Bonus: Beyond Classical Search
 
 ├── Classical_Pathfinding          # Module 1: Grid navigation using A* Search
 
