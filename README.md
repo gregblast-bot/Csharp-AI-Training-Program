@@ -1,4 +1,4 @@
-\# C# Artificial Intelligence Training Program
+# C# Artificial Intelligence Training Program
 
 
 
@@ -10,7 +10,7 @@ Instead of relying on typical Python-centric microservices, this program focuses
 
 
 
-\---
+---
 
 
 
