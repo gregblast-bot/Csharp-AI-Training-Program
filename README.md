@@ -2,7 +2,7 @@
 
 
 
-Welcome to the \*\*C# Artificial Intelligence Training Program\*\* repository. This repository contains the complete curriculum, source code, and practical demonstrations designed to train software engineers in bridging fundamental and modern AI concepts with high-performance, production-ready .NET implementation.
+Welcome to the **C# Artificial Intelligence Training Program** repository. This repository contains the complete curriculum, source code, and practical demonstrations designed to train software engineers in bridging fundamental and modern AI concepts with high-performance, production-ready .NET implementation.
 
 
 
@@ -26,7 +26,7 @@ The repository is structured as a single Visual Studio solution (`Csharp-AI-Trai
 
 ├── AI_Ops_Orchestration           # Capstone orchestration and automated workflows
 
-├── Classical_Pathfinding          # Module 1: Grid navigation using A\* Search
+├── Classical_Pathfinding          # Module 1: Grid navigation using A* Search
 
 ├── Deep_Learning_Inference        # Module 4: Local ONNX model inference and tensor manipulation
 
