@@ -14,7 +14,7 @@ Instead of relying on typical Python-centric microservices, this program focuses
 
 
 
-\## Repository \& Solution Architecture
+## Repository & Solution Architecture
 
 
 
@@ -24,19 +24,19 @@ The repository is structured as a single Visual Studio solution (`Csharp-AI-Trai
 
 ```text
 
-├── AI\_Ops\_Orchestration          # Capstone orchestration and automated workflows
+├── AI_Ops_Orchestration           # Capstone orchestration and automated workflows
 
-├── Classical\_Pathfinding         # Module 1: Grid navigation using A\* Search
+├── Classical_Pathfinding          # Module 1: Grid navigation using A\* Search
 
-├── Deep\_Learning\_Inference       # Module 4: Local ONNX model inference and tensor manipulation
+├── Deep_Learning_Inference        # Module 4: Local ONNX model inference and tensor manipulation
 
-├── Generative\_AI                 # Module 5: LLM integration, Semantic Kernel, and native plugins
+├── Generative_AI                  # Module 5: LLM integration, Semantic Kernel, and native plugins
 
-├── Machine\_Learning\_Prediction   # Module 3: Statistical pipelines using Microsoft ML.NET
+├── Machine_Learning_Prediction    # Module 3: Statistical pipelines using Microsoft ML.NET
 
-├── Probabilistic\_Classifier      # Module 2: Naïve Bayes classification with C# record types
+├── Probabilistic_Classifier       # Module 2: Naïve Bayes classification with C# record types
 
-├── Slides                        # Presentation decks, long-term training plans, and theory guides
+├── Slides                         # Presentation decks, long-term training plans, and theory guides
 
 ├── .gitignore                     # Git exclusion configurations
 
