@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="AI_Ops_Orchestration/AI_Ops_Orchestration.csproj" Id="db457ae4-821b-4d62-9183-b2d09fdabecf" />
+  <Project Path="Beam_Search/Beam_Search.csproj" Id="ea883122-14a7-4fb0-8422-6de618b72a36" />
   <Project Path="Classical_Pathfinding/Classical_Pathfinding.csproj" />
   <Project Path="Deep_Learning_Inference/Deep_Learning_Inference.csproj" Id="10591644-6fd2-4baa-b88d-6d9c3b5623ab" />
   <Project Path="Generative_AI/Generative_AI.csproj" Id="b0b2a911-2dcc-4f9f-b441-c59a004a7b35" />
